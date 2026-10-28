@@ -1,0 +1,42 @@
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Preparando entorno Python y dependencias'
+                bat 'py -m pipenv verify'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Ejecutando pruebas automatizadas'
+                bat 'py -m pipenv run python -m unittest -v'
+            }
+        }
+
+        stage('Analyze') {
+            steps {
+                echo 'Verificando consistencia de dependencias'
+                bat 'py -m pipenv graph'
+                bat 'py -m pipenv verify'
+            }
+        }
+
+        stage('Dependency Management') {
+            steps {
+                echo 'Instalando dependencias desde Pipfile.lock'
+                bat 'py -m pipenv sync'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Construyendo imagen Docker de Flask'
+                bat 'docker build -t flask-vulnerable:latest .'
+            }
+        }
+    }
+}
