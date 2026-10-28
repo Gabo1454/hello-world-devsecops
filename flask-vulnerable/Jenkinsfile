@@ -7,6 +7,8 @@ pipeline {
         PIPENV_VENV_IN_PROJECT = '1'
         PIPENV_YES = '1'
         PIPENV_NOSPIN = '1'
+        PYTHONIOENCODING = 'utf-8'
+        PYTHONUTF8 = '1'
         DOCKER = 'C:\\Users\\gaboa\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe'
     }
 
@@ -15,8 +17,11 @@ pipeline {
             steps {
                 dir('flask-vulnerable') {
                     echo 'Preparando entorno Python'
-                    bat '"%PYTHON%" -m pip install --target "%WORKSPACE%\\flask-vulnerable\\jenkins-tools" pipenv'
+
+                    bat '"%PYTHON%" -m pip install --disable-warnings --target "%WORKSPACE%\\flask-vulnerable\\jenkins-tools" pipenv'
+
                     bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv --version'
+
                     bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv verify'
                 }
             }
@@ -26,7 +31,9 @@ pipeline {
             steps {
                 dir('flask-vulnerable') {
                     echo 'Ejecutando pruebas automatizadas'
+
                     bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv install --dev'
+
                     bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv run python -m unittest -v'
                 }
             }
@@ -35,8 +42,10 @@ pipeline {
         stage('Analyze') {
             steps {
                 dir('flask-vulnerable') {
-                    echo 'Analizando dependencias'
-                    bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv graph'
+                    echo 'Analizando dependencias instaladas'
+
+                    bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv run python -m pip list --format=freeze'
+
                     bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv verify'
                 }
             }
@@ -46,7 +55,9 @@ pipeline {
             steps {
                 dir('flask-vulnerable') {
                     echo 'Sincronizando dependencias bloqueadas'
+
                     bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv sync --dev'
+
                     bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv verify'
                 }
             }
@@ -56,6 +67,7 @@ pipeline {
             steps {
                 dir('flask-vulnerable') {
                     echo 'Construyendo imagen Docker de Flask'
+
                     bat '"%DOCKER%" build -t flask-vulnerable:latest .'
                 }
             }
