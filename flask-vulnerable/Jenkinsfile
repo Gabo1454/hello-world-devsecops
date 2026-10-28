@@ -2,33 +2,38 @@
 pipeline {
     agent any
 
+    environment {
+        PYTHON = 'C:\\Users\\gaboa\\AppData\\Local\\Python\\pythoncore-3.14-64\\python.exe'
+    }
+
     stages {
         stage('Build') {
             steps {
-                echo 'Preparando entorno Python y dependencias'
-                bat 'py -m pipenv verify'
+                echo 'Preparando entorno y verificando dependencias'
+                bat '"%PYTHON%" -m pipenv verify'
             }
         }
 
         stage('Test') {
             steps {
                 echo 'Ejecutando pruebas automatizadas'
-                bat 'py -m pipenv run python -m unittest -v'
+                bat '"%PYTHON%" -m pipenv run python -m unittest -v'
             }
         }
 
         stage('Analyze') {
             steps {
-                echo 'Verificando consistencia de dependencias'
-                bat 'py -m pipenv graph'
-                bat 'py -m pipenv verify'
+                echo 'Analizando dependencias'
+                bat '"%PYTHON%" -m pipenv graph'
+                bat '"%PYTHON%" -m pipenv verify'
             }
         }
 
         stage('Dependency Management') {
             steps {
-                echo 'Instalando dependencias desde Pipfile.lock'
-                bat 'py -m pipenv sync'
+                echo 'Sincronizando dependencias bloqueadas'
+                bat '"%PYTHON%" -m pipenv sync'
+                bat '"%PYTHON%" -m pipenv verify'
             }
         }
 
