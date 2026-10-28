@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -15,9 +16,9 @@ pipeline {
         stage('Build') {
             steps {
                 dir('flask-vulnerable') {
-                    echo 'Preparando entorno Python'
+                    echo 'Preparando entorno Python y Pipenv'
 
-                    bat '"%PYTHON%" -m pip install --target "%WORKSPACE%\\flask-vulnerable\\jenkins-tools" pipenv'
+                    bat '"%PYTHON%" -m pip install --upgrade --target "%WORKSPACE%\\flask-vulnerable\\jenkins-tools" pipenv'
 
                     bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv --version'
 
@@ -29,7 +30,7 @@ pipeline {
         stage('Test') {
             steps {
                 dir('flask-vulnerable') {
-                    echo 'Ejecutando pruebas automatizadas'
+                    echo 'Instalando dependencias y ejecutando pruebas automatizadas'
 
                     bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv install --dev'
 
@@ -41,9 +42,9 @@ pipeline {
         stage('Analyze') {
             steps {
                 dir('flask-vulnerable') {
-                    echo 'Analizando dependencias instaladas'
+                    echo 'Analizando dependencias en busca de vulnerabilidades conocidas'
 
-                    bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv run python -m pip list --format=freeze'
+                    bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv run pip-audit -r requirements.txt'
 
                     bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv verify'
                 }

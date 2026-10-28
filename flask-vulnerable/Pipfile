@@ -7,6 +7,7 @@ name = "pypi"
 flask = "<4.0,>=3.1"
 
 [dev-packages]
+pip-audit = "*"
 
 [requires]
 python_version = "3.14"
