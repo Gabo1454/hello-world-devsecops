@@ -27,12 +27,22 @@ pipeline {
             }
         }
 
+        stage('Dependency Management') {
+            steps {
+                dir('flask-vulnerable') {
+                    echo 'Instalando dependencias desde Pipfile.lock'
+
+                    bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv sync --dev'
+
+                    bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv verify'
+                }
+            }
+        }
+
         stage('Test') {
             steps {
                 dir('flask-vulnerable') {
-                    echo 'Instalando dependencias y ejecutando pruebas automatizadas'
-
-                    bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv install --dev'
+                    echo 'Ejecutando pruebas unitarias'
 
                     bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv run python -m unittest -v'
                 }
@@ -42,23 +52,10 @@ pipeline {
         stage('Analyze') {
             steps {
                 dir('flask-vulnerable') {
-                    echo 'Analizando dependencias en busca de vulnerabilidades conocidas'
+                    echo 'Analizando dependencias con pip-audit'
 
-                    bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv run pip-audit -r requirements.txt'
+                    bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv run pip-audit'
 
-                    bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv verify'
-                }
-            }
-        }
-
-        stage('Dependency Management') {
-            steps {
-                dir('flask-vulnerable') {
-                    echo 'Sincronizando dependencias bloqueadas'
-
-                    bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv sync --dev'
-
-                    bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv verify'
                 }
             }
         }

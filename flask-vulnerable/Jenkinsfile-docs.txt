@@ -1,0 +1,54 @@
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Build') {
+            steps {
+                dir('flask-vulnerable') {
+                    bat 'pipenv sync --dev'
+                    bat 'pipenv verify'
+                }
+            }
+        }
+
+        stage('Test') {
+            steps {
+                dir('flask-vulnerable') {
+                    bat 'pipenv run python -m unittest -v'
+                }
+            }
+        }
+
+        stage('Generate Documentation') {
+            steps {
+                dir('flask-vulnerable') {
+                    bat '"C:\\Program Files\\Doxygen\\bin\\doxygen.exe" Doxyfile'
+                }
+            }
+        }
+
+        stage('Version Control') {
+            steps {
+                bat 'git status --short'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                dir('flask-vulnerable') {
+                    bat 'docker build -t flask-vulnerable:latest .'
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Pipeline 3.4.2 ejecutado correctamente.'
+        }
+        failure {
+            echo 'El pipeline presentó un error. Revisar los registros.'
+        }
+    }
+}

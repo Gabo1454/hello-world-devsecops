@@ -1,0 +1,33 @@
+/**
+@mainpage Documentación del proyecto Flask Vulnerable
+
+@section intro Introducción
+
+Este proyecto implementa una aplicación web utilizando el framework Flask
+de Python. Su propósito es servir como ejemplo para estudiar documentación
+de software y seguridad en el desarrollo.
+
+@section functionality Funcionalidad
+
+La aplicación dispone de la siguiente ruta:
+
+- **/hello**: recibe el parámetro `name` mediante una solicitud HTTP GET
+  y devuelve un saludo en formato HTML.
+
+@section security Seguridad
+
+La ruta `/hello` contiene intencionalmente una vulnerabilidad de
+Cross-Site Scripting (XSS), debido a que el parámetro recibido se incorpora
+directamente al HTML sin escapar.
+
+Esta vulnerabilidad se mantiene como parte del propósito educativo
+del proyecto.
+
+@section tools Herramientas
+
+- Python
+- Flask
+- Doxygen
+- Jenkins
+- Git
+*/
