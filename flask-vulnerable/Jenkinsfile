@@ -75,7 +75,7 @@ pipeline {
                 bat 'if not exist "%WORKSPACE%\\zap-reports" mkdir "%WORKSPACE%\\zap-reports"'
 
                 echo 'Ejecutando análisis de seguridad con OWASP ZAP'
-                bat '"%DOCKER%" run --rm -t -v "%WORKSPACE%\\zap-reports:/zap/wrk/:rw" ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py -t http://host.docker.internal:5001/hello -r zap-report.html'
+                bat(returnStatus: true, script: '"%DOCKER%" run --rm -t -v "%WORKSPACE%\\zap-reports:/zap/wrk/:rw" ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py -t http://host.docker.internal:5001/hello -r zap-report.html')
             }
         }
     }
