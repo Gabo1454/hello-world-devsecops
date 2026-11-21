@@ -17,11 +17,8 @@ pipeline {
             steps {
                 dir('flask-vulnerable') {
                     echo 'Preparando entorno Python y Pipenv'
-
                     bat '"%PYTHON%" -m pip install --upgrade --target "%WORKSPACE%\\flask-vulnerable\\jenkins-tools" pipenv'
-
                     bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv --version'
-
                     bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv verify'
                 }
             }
@@ -31,9 +28,7 @@ pipeline {
             steps {
                 dir('flask-vulnerable') {
                     echo 'Instalando dependencias desde Pipfile.lock'
-
                     bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv sync --dev'
-
                     bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv verify'
                 }
             }
@@ -43,7 +38,6 @@ pipeline {
             steps {
                 dir('flask-vulnerable') {
                     echo 'Ejecutando pruebas unitarias'
-
                     bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv run python -m unittest -v'
                 }
             }
@@ -53,9 +47,7 @@ pipeline {
             steps {
                 dir('flask-vulnerable') {
                     echo 'Analizando dependencias con pip-audit'
-
                     bat 'set "PYTHONPATH=%WORKSPACE%\\flask-vulnerable\\jenkins-tools" && "%PYTHON%" -m pipenv run pip-audit'
-
                 }
             }
         }
@@ -64,10 +56,33 @@ pipeline {
             steps {
                 dir('flask-vulnerable') {
                     echo 'Construyendo imagen Docker de Flask'
-
                     bat '"%DOCKER%" build -t flask-vulnerable:latest .'
+
+                    echo 'Eliminando contenedor anterior si existe'
+                    script {
+                        bat(returnStatus: true, script: '"%DOCKER%" rm -f flask-vulnerable-ev3')
+                    }
+
+                    echo 'Desplegando aplicación Flask'
+                    bat '"%DOCKER%" run -d --name flask-vulnerable-ev3 -p 5001:5000 flask-vulnerable:latest'
                 }
             }
+        }
+
+        stage('OWASP ZAP') {
+            steps {
+                echo 'Preparando directorio para informes ZAP'
+                bat 'if not exist "%WORKSPACE%\\zap-reports" mkdir "%WORKSPACE%\\zap-reports"'
+
+                echo 'Ejecutando análisis de seguridad con OWASP ZAP'
+                bat '"%DOCKER%" run --rm -t -v "%WORKSPACE%\\zap-reports:/zap/wrk/:rw" ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py -t http://host.docker.internal:5001/hello -r zap-report.html'
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: 'zap-reports/**', allowEmptyArchive: true
         }
     }
 }
