@@ -1,4 +1,3 @@
-
 # Hello World DevSecOps
 
 Proyecto de ejemplo para practicar integración y despliegue continuo (CI/CD) utilizando Jenkins, GitHub, Maven, Docker y herramientas de seguridad para la gestión de dependencias.
@@ -7,7 +6,7 @@ El repositorio contiene dos proyectos de ejemplo desarrollados en actividades di
 
 ## Descripción
 
-El objetivo del repositorio es practicar la automatización del ciclo de desarrollo de software, incluyendo la compilación, las pruebas automatizadas, el análisis de dependencias y la construcción de imágenes Docker.
+El objetivo del repositorio es practicar la automatización del ciclo de desarrollo de software, incluyendo la compilación, las pruebas automatizadas, el análisis de dependencias, la documentación técnica y la construcción de imágenes Docker.
 
 ## Tecnologías utilizadas
 
@@ -27,7 +26,8 @@ El objetivo del repositorio es practicar la automatización del ciclo de desarro
 - **Pipenv:** administración de entornos virtuales y dependencias.
 - **Pipfile y Pipfile.lock:** definición y bloqueo de dependencias.
 - **pip-audit:** análisis de dependencias en busca de vulnerabilidades conocidas.
-- **Jenkins:** ejecución automatizada de las etapas del pipeline.
+- **Doxygen:** generación automática de documentación técnica.
+- **Jenkins:** automatización de las etapas del pipeline.
 - **Docker:** construcción de la imagen de la aplicación.
 
 ## Actividades desarrolladas
@@ -48,28 +48,57 @@ La aplicación Spring Boot se ejecuta localmente en el puerto 8080. En la config
 
 ### 2. Actividad 3.3.2: Dependencias y actualizaciones seguras
 
-En esta actividad se configuró un pipeline de Jenkins para automatizar la gestión de dependencias y realizar comprobaciones de seguridad en una aplicación Flask desarrollada en Python.
+En esta actividad se trabajó en la gestión de dependencias y las comprobaciones de seguridad de una aplicación Flask desarrollada en Python.
 
 El proyecto se encuentra en la carpeta `flask-vulnerable/` y utiliza Pipenv para administrar las dependencias y mantener el archivo `Pipfile.lock`.
 
-El pipeline se configuró mediante el archivo `flask-vulnerable/Jenkinsfile` y se organizó en cinco etapas:
+Se incorporaron las siguientes herramientas y configuraciones:
+
+- **Pipenv:** administración de dependencias y entornos virtuales.
+- **Pipfile.lock:** bloqueo de versiones para mantener instalaciones reproducibles.
+- **pip-audit:** análisis de dependencias en busca de vulnerabilidades conocidas.
+- **Pruebas unitarias:** comprobación del funcionamiento del endpoint `/hello`.
+- **Doxygen:** generación de documentación técnica a partir del código fuente y sus comentarios.
+
+#### Configuración del pipeline Jenkins
+
+El pipeline se definió en `flask-vulnerable/Jenkinsfile` y contempla cinco etapas:
 
 1. **Build:** prepara el entorno Python, instala Pipenv y verifica el archivo de bloqueo de dependencias.
-2. **Test:** instala las dependencias necesarias y ejecuta las pruebas unitarias automatizadas.
-3. **Analyze:** utiliza `pip-audit` para buscar vulnerabilidades conocidas en las dependencias analizadas y verifica el estado del archivo de bloqueo.
-4. **Dependency Management:** sincroniza las dependencias definidas en Pipenv y comprueba que el archivo de bloqueo esté actualizado.
+2. **Dependency Management:** sincroniza las dependencias definidas en `Pipfile.lock`, incluyendo las dependencias de desarrollo, y verifica su consistencia.
+3. **Test:** ejecuta las pruebas unitarias automatizadas mediante `unittest`.
+4. **Analyze:** utiliza `pip-audit` para analizar las dependencias instaladas en el entorno de Pipenv.
 5. **Deploy:** construye la imagen Docker de la aplicación Flask.
+
+#### Documentación técnica con Doxygen
+
+Se incorporó Doxygen para generar documentación técnica del proyecto.
+
+Los principales archivos incorporados fueron:
+
+- `Doxyfile`: archivo de configuración de Doxygen.
+- `mainpage.dox`: contenido de la página principal de la documentación.
+- `test_app.py`: incorpora comentarios estructurados para documentar el módulo, la clase y los métodos de prueba.
+- `Jenkinsfile-docs.txt`: archivo adicional relacionado con la configuración de documentación.
+
+La documentación generada se encuentra en:
+
+- `docs/html/`: documentación navegable mediante un navegador web.
+- `docs/latex/`: documentación en formato LaTeX.
 
 #### Resultados obtenidos
 
-La ejecución del pipeline finalizó correctamente con el estado `Finished: SUCCESS`.
+Las comprobaciones realizadas localmente finalizaron correctamente:
 
-- Las pruebas unitarias finalizaron correctamente.
+- Las pruebas unitarias de Flask se ejecutaron correctamente mediante `python -m unittest -v`.
+- Pipenv verificó la consistencia del archivo de bloqueo y sincronizó las dependencias.
 - `pip-audit` informó `No known vulnerabilities found` para las dependencias analizadas.
-- Pipenv verificó y sincronizó las dependencias del proyecto.
+- Doxygen generó correctamente los directorios de documentación HTML y LaTeX.
 - Docker construyó correctamente la imagen `flask-vulnerable:latest`.
 
-El resultado del análisis se limita a las dependencias revisadas y no representa una auditoría completa de la aplicación.
+**Estado de validación:** las comprobaciones anteriores se realizaron localmente. La ejecución integral del pipeline en Jenkins queda pendiente de validación.
+
+El resultado de `pip-audit` se limita a las dependencias revisadas y no representa una auditoría completa de la aplicación.
 
 ## Ejecución local del proyecto Spring Boot
 
@@ -95,15 +124,66 @@ Desde la raíz del repositorio, ejecutar en Windows:
 
 La aplicación estará disponible en:
 
-http://localhost:8080/
+[http://localhost:8080/](http://localhost:8080/)
+
+## Ejecución local del proyecto Flask
+
+### Requisitos
+
+- Python 3.14.
+- Pipenv.
+- Docker Desktop, si se desea construir la imagen.
+- Doxygen, si se desea generar la documentación.
+
+### Instalar dependencias
+
+Desde la carpeta `flask-vulnerable/`:
+
+```powershell
+python -m pipenv sync --dev
+```
+
+### Ejecutar pruebas unitarias
+
+```powershell
+python -m pipenv run python -m unittest -v
+```
+
+### Analizar dependencias
+
+```powershell
+python -m pipenv run pip-audit
+```
+
+### Generar documentación
+
+```powershell
+doxygen Doxyfile
+```
+
+La documentación HTML se genera en `docs/html/`. Para visualizarla, abrir `docs/html/index.html` en un navegador.
+
+### Construir imagen Docker
+
+```powershell
+docker build -t flask-vulnerable:latest .
+```
+
+Para comprobar que la imagen existe:
+
+```powershell
+docker images flask-vulnerable
+```
 
 ## Ejecución del pipeline en Jenkins
 
 Para ejecutar los pipelines, se debe acceder a Jenkins, seleccionar el trabajo correspondiente y utilizar la opción **Build Now**.
 
-Para la actividad 3.3.2, el trabajo configurado es `dependencias-seguras`.
+Para la actividad 3.3.2, el trabajo asociado es `dependencias-seguras`.
 
-El pipeline de Flask construye la imagen Docker `flask-vulnerable:latest`. La construcción de esta imagen se verificó correctamente, pero esto no implica que el contenedor haya sido ejecutado ni que el despliegue de la aplicación se haya comprobado.
+El pipeline de Flask está definido en `flask-vulnerable/Jenkinsfile` y contempla la instalación y verificación de dependencias, las pruebas unitarias, el análisis de seguridad y la construcción de la imagen Docker.
+
+La construcción de la imagen se verificó localmente. La ejecución completa de este pipeline en Jenkins está pendiente de validación.
 
 ## Estructura del repositorio
 
@@ -119,7 +199,14 @@ hello-world-devsecops/
 │   ├── Pipfile
 │   ├── Pipfile.lock
 │   ├── Dockerfile
-│   └── Jenkinsfile
+│   ├── Jenkinsfile
+│   ├── Jenkinsfile-docs.txt
+│   ├── Doxyfile
+│   ├── mainpage.dox
+│   ├── .gitignore
+│   └── docs/
+│       ├── html/
+│       └── latex/
 ├── .gitignore
 ├── Dockerfile
 ├── Jenkinsfile
@@ -132,14 +219,16 @@ hello-world-devsecops/
 
 - Los pipelines se ejecutan manualmente desde Jenkins.
 - No se configuró un webhook para activar automáticamente el pipeline al actualizar GitHub.
-- El análisis de `pip-audit` se limita a las dependencias que se le indicaron.
+- El análisis de `pip-audit` se limita a las dependencias instaladas y analizadas.
 - La construcción de una imagen Docker no garantiza por sí sola que la aplicación se ejecute correctamente.
+- La generación de documentación con Doxygen depende de los comentarios y configuraciones incorporados al proyecto.
+- La ejecución integral del pipeline de la actividad 3.3.2 en Jenkins está pendiente de validación.
 - Los proyectos están orientados a prácticas educativas y pruebas en un entorno local, no a un entorno productivo.
 
 ## Repositorio
 
-https://github.com/Gabo1454/hello-world-devsecops
+[https://github.com/Gabo1454/hello-world-devsecops](https://github.com/Gabo1454/hello-world-devsecops)
 
 ## Propósito educativo
 
-Este repositorio permite practicar la integración entre control de versiones, automatización de compilaciones, pruebas unitarias, gestión de dependencias, análisis de vulnerabilidades conocidas y construcción de imágenes Docker, incorporando progresivamente buenas prácticas de DevSecOps.
+Este repositorio permite practicar la integración entre control de versiones, automatización de compilaciones, pruebas unitarias, gestión de dependencias, análisis de vulnerabilidades conocidas, documentación técnica y construcción de imágenes Docker, incorporando progresivamente buenas prácticas de DevSecOps.
