@@ -1,0 +1,60 @@
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ev3-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    restart: unless-stopped
+    depends_on:
+      - cadvisor
+      - docker-exporter
+
+  docker-exporter:
+    image: ghcr.io/dlepaux/docker-exporter:latest
+    container_name: ev3-docker-exporter
+    ports:
+      - "9713:9713"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    group_add:
+      - "0"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ev3-grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin123
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: ev3-cadvisor
+    ports:
+      - "8085:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    restart: unless-stopped
+
+volumes:
+  prometheus_data:
+  grafana_data:
